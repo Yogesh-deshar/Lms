@@ -19,7 +19,7 @@ function Regester() {
       userName: dataToSend.Email, // Using email as username
       email: dataToSend.Email,
       name: dataToSend.Name,
-      password: dataToSend.PasswordHash, // This will be hashed by the backend
+      PasswordHash: dataToSend.PasswordHash, // This will be hashed by the backend
       PhoneNumber: dataToSend.Number,
       Address: dataToSend.Address,
     };

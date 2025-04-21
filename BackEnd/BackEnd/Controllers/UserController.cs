@@ -23,38 +23,59 @@ namespace BackEnd.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(Login login)
         {
-            string message = "";
-
             try
             {
+                if (string.IsNullOrEmpty(login.UserName))
+                {
+                    return BadRequest("Username is required");
+                }
+
+                // First try to find by username
                 User user_ = await _userManager.FindByNameAsync(login.UserName);
-                if (user_ != null && !user_.EmailConfirmed)
+
+                // If not found by username, try to find by email
+                if (user_ == null)
+                {
+                    user_ = await _userManager.FindByEmailAsync(login.UserName);
+                }
+
+                if (user_ == null)
+                {
+                    return Unauthorized("Invalid username/email or password");
+                }
+
+                // Check if email is confirmed
+                if (!user_.EmailConfirmed)
                 {
                     user_.EmailConfirmed = true;
+                    await _userManager.UpdateAsync(user_);
                 }
 
+                // Attempt to sign in
+                var result = await _signInManager.PasswordSignInAsync(
+                    user_,
+                    login.Password,
+                    login.Rember,
+                    lockoutOnFailure: false
+                );
 
-
-                var result = await _signInManager.PasswordSignInAsync(user_, login.Password, (bool)login.Rember, lockoutOnFailure: false);
-                if (result.Succeeded)
+                if (!result.Succeeded)
                 {
-                    return Unauthorized("User not found");
+                    return Unauthorized("Invalid username/email or password");
                 }
 
-
+                // Update last login time
                 user_.LastLogin = DateTime.Now;
                 var updateResult = await _userManager.UpdateAsync(user_);
 
-                message = "Login successfully";
-
+                return Ok(new { message = "Login successfully" });
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-
-            return Ok(new { message = message});
         }
+
         [HttpGet("logout"),Authorize]
         public async Task<IActionResult> Logout()
         {
@@ -143,7 +164,7 @@ namespace BackEnd.Controllers
             return Ok(new { user = user });
         }
 
-        [HttpGet("jfljfjldkj"), Authorize]
+        [HttpGet("jfljfjldkj")]
         public async Task<ActionResult> CheckUser(string email)
         {
           string message = "";
