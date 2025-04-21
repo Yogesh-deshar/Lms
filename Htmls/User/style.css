@@ -1,0 +1,555 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+.body {
+  background-image: url(./Images/boook3.jpg);
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+}
+.container {
+  max-width: 1200px;
+  height: 580px;
+}
+.container .login {
+  padding: 0 0 0 35px;
+  border-radius: 20px;
+  width: 100%;
+  height: 600px;
+
+  position: relative;
+  top: 90px;
+
+  display: flex;
+
+  /* From https://css.glass */
+  background: rgba(165, 156, 156, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6.8px);
+  -webkit-backdrop-filter: blur(6.8px);
+}
+
+.container .login .login_items {
+  margin-top: 35px;
+  flex-basis: 40%;
+  height: 500px;
+  border: 1px solid rgb(10, 10, 10);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  h2 {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 3rem;
+  }
+}
+
+.container .login .login_items .logincont {
+  display: flex;
+  flex-direction: column;
+
+  p {
+    font-size: 25px;
+    padding-left: 5px;
+    margin: 15px 0;
+  }
+
+  input {
+    all: unset;
+    margin-left: 5px;
+    padding: 5px;
+    width: 400px;
+    border-bottom: 1px solid black;
+    margin: 0 auto;
+  }
+  button {
+    all: unset;
+    margin: 10px auto;
+    margin-top: 20px;
+    border-radius: 10px;
+    background-color: rgb(130, 235, 130);
+    padding: 5px;
+    width: 200px;
+    color: white;
+    font-size: 1rem;
+    text-align: center;
+  }
+}
+
+.container .login .Image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding: 50px 0 50px 0;
+  flex-basis: 60%;
+  text-align: center;
+}
+
+.container .login .Image .imgcontain {
+}
+
+.container .login .Image .imgcontain p {
+  font-family: 1.5rem;
+}
+
+.container .login .Image .imgcontain h2 {
+  font-size: 3rem;
+}
+
+.container .login .Image img {
+  /* width: 400px; */
+
+  width: 300px;
+  height: 50%;
+}
+
+/* regester */
+
+.Regester {
+  position: relative;
+  display: grid;
+  border: 1px solid black;
+  top: 100px;
+  /* left: 450px; */
+  margin: 0 auto;
+  width: 900px;
+  display: flex;
+  justify-content: space-around;
+
+  background: rgba(203, 200, 200, 0.637);
+  border-radius: 16px;
+
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(6.8px);
+}
+
+.Regester .Regester_item {
+  flex-basis: 40%;
+
+  h2 {
+    text-align: center;
+    padding: 5px 10px 0px 10px;
+    font-size: 3rem;
+  }
+}
+
+.Regester .Regester_item form {
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 50px;
+
+  label {
+    padding: 10px;
+    align-self: start;
+  }
+}
+
+.Regester .Regester_item form input {
+  all: unset;
+  width: 300px;
+  border-bottom: 1px solid black;
+  padding: 0 10px;
+}
+
+.Regester .Regester_item form button {
+  all: unset;
+  border-radius: 10px;
+  text-align: center;
+  padding: 5px;
+  background-color: greenyellow;
+  margin-top: 20px;
+}
+
+.Regester .side {
+  flex-basis: 60%;
+  text-align: center;
+
+  transform: translate(0, 45%);
+}
+
+/* index */
+
+header {
+  background-color: #f4df4eff;
+  width: 100%;
+  height: 50px;
+}
+
+header nav .container {
+  height: 50px;
+
+  display: flex;
+  justify-content: space-between;
+  place-items: center;
+}
+
+header nav .container .navitem ul {
+  margin: 5px 0px 0 0px;
+  display: flex;
+  gap: 80px;
+}
+
+header nav .container ul li {
+  all: unset;
+}
+
+header nav .container .prof {
+  display: flex;
+  gap: 10px;
+}
+
+header nav .container .prof .search {
+  position: relative;
+  display: inline-block;
+
+  .btn {
+    all: unset;
+    padding: 2px;
+    border: 1px solid black;
+    border-radius: 10px;
+  }
+}
+
+header nav .container .prof .search .dropcontain {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 380px;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  right: 0; /* Start from the right side */
+  top: 130%; /* Stick below the button */
+  padding: 10px; /* Add some padding for better spacing */
+}
+header nav .container .prof .dropcontain form {
+  input {
+    width: 300px;
+  }
+}
+
+header nav .container .prof .search:hover .dropcontain {
+  display: block;
+}
+
+header nav .container .prof .profile {
+  display: block;
+  position: relative;
+}
+
+header nav .container .prof .profile .profile_drop {
+  display: none;
+  position: absolute;
+  top: 150%;
+
+  button {
+    all: unset;
+    padding: 5px;
+    border: 1px solid black;
+    text-align: center;
+    border-radius: 10px;
+
+    margin-bottom: 5px;
+  }
+}
+
+header nav .container .prof .profile:hover .profile_drop {
+  display: block;
+}
+
+section .container .title {
+  text-align: center;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+section .set .container {
+  height: max-content;
+}
+
+section .container .School_Contain {
+  margin-top: 20px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 0fr));
+  gap: 20px;
+}
+
+section .container .School_Contain div {
+  background-color: #93d6ff;
+  color: white;
+  position: relative;
+
+  border-bottom-right-radius: 20px;
+
+  padding: 10px;
+  width: 300px;
+  height: 150px;
+
+  h2 {
+    padding: 5px;
+    margin: 0 0 0 30px;
+  }
+}
+section .container .School_Contain div i {
+  position: absolute;
+  font-size: 30px;
+  right: 24px;
+  bottom: 20px;
+}
+
+section .container {
+  height: fit-content;
+}
+
+footer .footer {
+  margin-top: 20px;
+  background-color: black;
+  color: white;
+  width: 100%;
+  height: 100px;
+  font-size: 50px;
+  text-align: center;
+}
+
+/* class */
+
+section .container .books {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 0fr));
+  gap: 50px;
+  margin: 20px 0 0 0px;
+  justify-content: center;
+}
+
+section .container .books .bookitems {
+  width: 300px;
+  height: 400px;
+  border: 1px solid black;
+}
+
+section .container .books .bookitems img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  /* border-radius: 20px; */
+}
+
+section .container .books .bookitems p {
+  font-size: 20px;
+  margin: 5px 10px;
+}
+
+section .container .books .bookitems button {
+  all: unset;
+
+  text-align: center;
+  border-radius: 100px;
+  background-color: greenyellow;
+  color: white;
+  padding: 10px;
+  margin: 10px 65px;
+  width: 150px;
+}
+
+/* 
+profile */
+
+.container .profile_info {
+  border: 1px solid black;
+  width: 30vw;
+  height: 70vh;
+  margin: 10vh auto;
+}
+.container .profile_info h2 {
+  text-align: center;
+}
+
+.container .profile_info img {
+  width: 200px;
+  border-radius: 50%;
+  margin: 0 30%;
+}
+
+.container .profile_info .Profile {
+  padding: 5px 10px;
+}
+
+.container .profile_info .Profile #file {
+}
+
+.container .profile_info .Profile p {
+}
+.container .profile_info .info {
+  font-size: large;
+  padding: 5px 10px;
+  margin-top: 10px;
+}
+
+.container .profile_info .button {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.container .profile_info .button .btn {
+  color: white;
+}
+
+/* updateprofile */
+
+.container .update h2 {
+  text-align: center;
+  text-decoration: underline;
+  margin-bottom: 10px;
+}
+.container .update {
+  margin: 10vh auto;
+  border: 1px solid black;
+  width: 420px;
+  height: 500px;
+}
+
+.container .update form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  input {
+    margin: 0 auto;
+    width: 300px;
+    border-radius: 50px;
+    padding-left: 10px;
+  }
+
+  label {
+    margin-left: 10vh;
+  }
+
+  button {
+    margin: 10px auto;
+    width: 300px;
+    border-radius: 10px;
+    background-color: rgba(81, 248, 81, 0.481);
+  }
+}
+
+/* booked */
+
+section .container .books_booked {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 0fr));
+  gap: 50px;
+  margin: 20px 0 0 0px;
+  justify-content: center;
+}
+
+section .container .books_booked .bookitems {
+  width: 300px;
+  height: 350px;
+  border: 1px solid black;
+}
+
+section .container .books_booked .bookitems img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: contain;
+  /* border-radius: 20px; */
+}
+
+section .container .books_booked .bookitems p {
+  font-size: 20px;
+  margin: 5px 10px;
+}
+
+section .container .books_booked .bookitems button {
+  all: unset;
+
+  text-align: center;
+  border-radius: 100px;
+  background-color: rgb(254, 0, 0);
+  color: white;
+  padding: 10px;
+  margin: 10px 65px;
+  width: 150px;
+}
+
+/* popup */
+
+.popup {
+}
+
+/* contact  */
+
+.container .contains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: space-between;
+}
+
+.container .contains .product .cont {
+  display: grid;
+  place-items: center;
+  gap: 30px;
+}
+.container .contains .product .cont .info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 70px;
+  place-items: center;
+  justify-content: space-evenly;
+}
+
+.container .contains .product .cont .info .info_contain {
+  width: 200px;
+  height: 165px;
+
+  background-color: rgba(154, 251, 240, 0.936);
+  border-radius: 10px;
+}
+
+.container .contains .product .cont .info .info_contain p {
+  text-align: center;
+
+  font-size: 20px;
+}
+.container .contains .product .cont .info .info_contain h2 {
+  text-align: center;
+  margin: 50px 0 0 0;
+}
+
+/* about  */
+
+.container .about_us_contain {
+  margin-top: 100px;
+  display: flex;
+  gap: 50px;
+  flex-wrap: wrap;
+}
+
+.container .about_us_contain .image {
+  display: inline-block;
+}
+
+.container .about_us_contain .image img {
+  min-width: 500px;
+  max-width: 550px;
+  mix-blend-mode: multiply;
+}
+
+.container .about_us_contain .contain {
+  width: 700px;
+
+  display: grid;
+  place-items: center;
+  font-size: large;
+}

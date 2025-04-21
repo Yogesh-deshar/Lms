@@ -1,0 +1,35 @@
+@BackEnd_HostAddress = https://localhost:7178
+
+GET {{BackEnd_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+POST {{BackEnd_HostAddress}}/api/books
+
+###
+
+GET {{BackEnd_HostAddress}}/api/books
+
+###
+
+DELETE {{BackEnd_HostAddress}}/api/books/{id}
+
+###
+
+GET {{BackEnd_HostAddress}}/api/books/{id}
+
+###
+
+PUT {{BackEnd_HostAddress}}/api/books/{id}
+Content-Type: application/json
+
+{
+  //Guid
+}
+
+###
+
+GET {{BackEnd_HostAddress}}/weatherforecast
+
+###
