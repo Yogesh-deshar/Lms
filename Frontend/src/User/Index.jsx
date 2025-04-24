@@ -4,49 +4,59 @@ import Footer from "./Footer";
 import "../App.css";
 import { Navigate } from "react-router-dom";
 
-
 function Index() {
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
+  document.title = "Welcome";
+  const [userInfo, setUserInfo] = useState({});
 
   useEffect(() => {
-    const userinfo = localStorage.getItem("user");
-    if (!userinfo) {
-      setError("No user information found");
-      return;
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        // Use the email from the user data
+        fetch(`/api/User/home/${userData.email}`, {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Received user info:", data);
+            if (data.userInfo) {
+              setUserInfo(data.userInfo);
+            } else {
+              // If no userInfo in response, use the data from localStorage
+              setUserInfo(userData);
+            }
+          })
+          .catch((error) => {
+            console.log("Error home page: ", error);
+            // If API call fails, use the data from localStorage
+            setUserInfo(userData);
+          });
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
     }
-
-    fetch("api/Backend/home/" + userinfo, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setUser(data.user);
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error);
-        setError(error.message);
-      });
   }, []);
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  // if (!user) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
     <>
       <Header />
-
+      <h2>Welcome, {userInfo?.name || userInfo?.userName || "User"}</h2>
       <section>
         <div className="set">
           <div className="container">

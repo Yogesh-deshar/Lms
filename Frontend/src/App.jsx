@@ -31,62 +31,114 @@ import Regester from "./User/Regester";
 // Create a context for authentication
 export const AuthContext = React.createContext();
 
+// Protected Route component
+function ProtectedRoute({ children }) {
+  const user = localStorage.getItem("user");
+  console.log("ProtectedRoute - Current user state:", user);
+
+  if (!user) {
+    console.log("No user found in localStorage, redirecting to login");
+    return <Navigate to="/login" replace />;
+  }
+
+  try {
+    const userData = JSON.parse(user);
+    if (!userData.isAuthenticated) {
+      console.log("User is not authenticated, redirecting to login");
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    localStorage.removeItem("user");
+    return <Navigate to="/login" replace />;
+  }
+}
+
+
+
 function App() {
-  const [isLogged, setIsLogged] = useState(!!localStorage.getItem("user"));
-
+  const isLogged = localStorage.getItem("user");
   const logout = async () => {
-    try {
-      const response = await fetch("/api/User/logout", {
-        method: "GET",
-        credentials: "include",
-      });
+    const response = await fetch("/api/securewebsite/logout", {
+      method: "GET",
+      credentials: "include",
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.removeItem("user");
-        setIsLogged(false);
-        alert(data.message || "Logged out successfully");
-        window.location.href = "/login";
-      } else {
-        console.error("Logout failed:", response.status, response.statusText);
-        alert("Failed to logout. Please try again.");
-      }
-    } catch (error) {
-      console.error("Logout error:", error);
-      alert("An error occurred during logout. Please try again.");
+    const data = await response.json();
+    if (response.ok) {
+      localStorage.removeItem("user");
+
+      alert(data.message);
+
+      document.location = "/login";
+    } else {
+      console.log("could not logout: ", response);
     }
   };
-
   return (
-    <AuthContext.Provider value={{ isLogged, setIsLogged, logout }}>
-      <Router>
-        <Routes>
-          {/* User Routes */}
-          <Route path="/" element={<Index />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/booked" element={<Booked />} />
-          <Route path="/class" element={<Class />} />
-          <Route path="/profile" element={<UserProfile />} />
-          <Route path="/update-profile" element={<UpdateProfile />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/regester" element={<Regester />} />
+    <Router>
+      <Routes>
+        {/* User Routes */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route
+          path="/booked"
+          element={
+            <ProtectedRoute>
+              <Booked />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/class"
+          element={
+            <ProtectedRoute>
+              <Class />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/update-profile"
+          element={
+            <ProtectedRoute>
+              <UpdateProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/regester" element={<Regester />} />
 
-          {/* Admin Routes */}
-          <Route path="/admin" element={<Admin_login />} />
-          <Route path="/admin/dashboard" element={<Admin_index />} />
-          <Route
-            path="/admin/booked-books"
-            element={<Admin_Alrady_booked_book />}
-          />
-          <Route path="/admin/add-book" element={<Admin_add_book />} />
-          <Route path="/admin/manage-books" element={<Admin_manage_book />} />
+        {/* Admin Routes */}
+        <Route path="/admin" element={<Admin_login />} />
+        <Route path="/admin/dashboard" element={<Admin_index />} />
+        <Route
+          path="/admin/booked-books"
+          element={<Admin_Alrady_booked_book />}
+        />
+        <Route path="/admin/add-book" element={<Admin_add_book />} />
+        <Route path="/admin/manage-books" element={<Admin_manage_book />} />
 
-          {/* Redirect any unknown routes to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
-    </AuthContext.Provider>
+        {/* Redirect any unknown routes to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 

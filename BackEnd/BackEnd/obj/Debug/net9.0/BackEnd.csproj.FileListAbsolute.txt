@@ -278,3 +278,4 @@ C:\Users\Dell\Downloads\6Th sem prject\BackEnd\BackEnd\bin\Debug\net9.0\Microsof
 C:\Users\Dell\Downloads\6Th sem prject\BackEnd\BackEnd\bin\Debug\net9.0\System.Formats.Asn1.dll
 C:\Users\Dell\Downloads\6Th sem prject\BackEnd\BackEnd\bin\Debug\net9.0\System.Text.Json.dll
 C:\Users\Dell\Downloads\6Th sem prject\BackEnd\BackEnd\obj\Debug\net9.0\BackEnd.sourcelink.json
+C:\Users\Dell\Downloads\6Th sem prject\BackEnd\BackEnd\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

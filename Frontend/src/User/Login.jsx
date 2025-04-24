@@ -1,120 +1,109 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
+
 function Login() {
   document.title = "Login";
+  const navigate = useNavigate();
+
+  // Check if user is already logged in
+  // useEffect(() => {
+  //   const user = localStorage.getItem("user");
+  //   if (user) {
+  //     try {
+  //       const userData = JSON.parse(user);
+  //       if (userData.isAuthenticated) {
+  //         console.log("User already logged in, redirecting to home");
+  //         navigate("/", { replace: true });
+  //       }
+  //     } catch (error) {
+  //       console.error("Error parsing stored user data:", error);
+  //       localStorage.removeItem("user");
+  //     }
+  //   }
+  // }, [navigate]);
 
   async function loginhandle(e) {
     e.preventDefault();
     const form_ = e.target;
-
-    // Get the submit button that triggered the form submission
     const submitter = e.submitter || document.querySelector("button.login");
-
     const formdata = new FormData(form_, submitter);
     const dataToSend = {};
     for (const [key, value] of formdata) {
       dataToSend[key] = value;
     }
 
-    if (dataToSend.Remember === "on") {
-      dataToSend.Remember = true;
-    }
-
     try {
-      // Create the login data object that matches the backend Login model
       const loginData = {
-        UserName: dataToSend.Email.toLowerCase(), // Try lowercase email first
+        Email: dataToSend.Email,
         Password: dataToSend.Password,
-        Rember: dataToSend.Remember || false,
+        Remember: true,
       };
 
-      console.log("Login attempt details:", {
-        username: loginData.UserName,
-        passwordLength: loginData.Password?.length,
-        remember: loginData.Rember,
-      });
+      console.log("Starting login attempt with data:", loginData);
 
-      // First try with lowercase email
-      let respond = await fetch("/api/User/login", {
+      const response = await fetch("/api/User/login", {
         method: "POST",
         credentials: "include",
-        body: JSON.stringify(loginData),
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
+        body: JSON.stringify(loginData),
       });
 
-      // If first attempt fails, try with original case
-      if (!respond.ok) {
-        loginData.UserName = dataToSend.Email; // Try original case
-        console.log("Retrying with original case:", loginData.UserName);
+      console.log("Login response received:", {
+        status: response.status,
+        ok: response.ok,
+        statusText: response.statusText,
+      });
 
-        respond = await fetch("/api/User/login", {
-          method: "POST",
-          credentials: "include",
-          body: JSON.stringify(loginData),
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        });
-      }
+      const responseText = await response.text();
+      console.log("Raw response text:", responseText);
 
-      console.log("Login response status:", respond.status);
-
-      // First check if the response is ok
-      if (!respond.ok) {
-        const errorText = await respond.text();
-        console.error(
-          "Login failed with status:",
-          respond.status,
-          "Response:",
-          errorText
-        );
-        if (respond.status === 401) {
-          throw new Error(
-            "Invalid username or password. Please check your credentials and try again."
-          );
-        }
-        throw new Error(
-          `Login failed: ${respond.status} ${respond.statusText}`
-        );
-      }
-
-      // Try to get the response text first
-      const responseText = await respond.text();
-      console.log("Login response text:", responseText);
-
-      // Only try to parse as JSON if we have content
       let data;
       if (responseText) {
         try {
           data = JSON.parse(responseText);
+          console.log("Parsed response data:", data);
+
+          if (response.ok) {
+            // Store the token
+            if (data.token) {
+              localStorage.setItem("token", data.token);
+            }
+
+            // Store user info
+            const userInfo = {
+              ...data.user,
+              isAuthenticated: true,
+              loginTime: new Date().toISOString(),
+            };
+            localStorage.setItem("user", JSON.stringify(userInfo));
+
+            // Navigate to home page
+            navigate("/");
+          } else {
+            const messageel = document.querySelector(".message");
+            messageel.innerHTML =
+              data.message || "Login failed. Please try again.";
+          }
         } catch (e) {
           console.error("Failed to parse JSON response:", responseText);
-          throw new Error("Invalid JSON response from server");
+          const messageel = document.querySelector(".message");
+          messageel.innerHTML = "Server error. Please try again later.";
         }
-      }
-
-      if (respond.ok) {
-        localStorage.setItem("user", dataToSend.Email);
-        window.location.href = "/";
       } else {
+        console.error("Empty response from server");
         const messageel = document.querySelector(".message");
-        if (data?.message) {
-          messageel.innerHTML = data.message;
-        } else {
-          messageel.innerHTML = "Login failed. Please try again.";
-        }
+        messageel.innerHTML = "Server error. Please try again later.";
       }
     } catch (error) {
       console.error("Login error:", error);
       const messageel = document.querySelector(".message");
-      messageel.innerHTML = `Error: ${error.message}. Please try again later.`;
+      messageel.innerHTML = "An error occurred during login. Please try again.";
     }
   }
-
   return (
     <>
       <div className="body">
@@ -140,10 +129,7 @@ function Login() {
                     placeholder="Enter your Password"
                     required
                   />
-                  {/* <div className="remember-me">
-                    <input type="checkbox" name="Remember" id="remember" />
-                    <label htmlFor="remember">Remember me</label>
-                  </div> */}
+
                   <button type="submit" className="login">
                     Login
                   </button>

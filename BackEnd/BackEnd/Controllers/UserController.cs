@@ -3,8 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+
+
+
 
 namespace BackEnd.Controllers
 {
@@ -15,64 +21,116 @@ namespace BackEnd.Controllers
 
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        public UserController(UserManager<User> userManager, SignInManager<User> signInManager)
+        private readonly ILogger<User> _logger;
+        private readonly IConfiguration _configuration;
+        public UserController(UserManager<User> userManager, SignInManager<User> signInManager , IConfiguration configuration, ILogger<User> logger)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _configuration = configuration;
+            _logger = logger;
         }
+
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login(Login login)
+        public async Task<ActionResult> LoginUser(Login login)
         {
             try
             {
-                if (string.IsNullOrEmpty(login.UserName))
+                _logger.LogInformation("Login attempt for email: {Email}", login.Email);
+
+                if (login == null)
                 {
-                    return BadRequest("Username is required");
+                    _logger.LogWarning("Login attempt with null login object");
+                    return BadRequest(new { message = "Login data is required." });
                 }
 
-                // First try to find by username
-                User user_ = await _userManager.FindByNameAsync(login.UserName);
+                if (string.IsNullOrEmpty(login.Email) || string.IsNullOrEmpty(login.Password))
+                {
+                    _logger.LogWarning("Invalid login attempt - empty email or password");
+                    return BadRequest(new { message = "Email and password are required." });
+                }
 
-                // If not found by username, try to find by email
+                _logger.LogInformation("Looking up user with email: {Email}", login.Email);
+                User user_ = await _userManager.FindByEmailAsync(login.Email);
+
                 if (user_ == null)
                 {
-                    user_ = await _userManager.FindByEmailAsync(login.UserName);
+                    _logger.LogWarning("User not found for email: {Email}", login.Email);
+                    return BadRequest(new { message = "User not found. Please check your email." });
                 }
 
-                if (user_ == null)
-                {
-                    return Unauthorized("Invalid username/email or password");
-                }
-
-                // Check if email is confirmed
-                if (!user_.EmailConfirmed)
-                {
-                    user_.EmailConfirmed = true;
-                    await _userManager.UpdateAsync(user_);
-                }
-
-                // Attempt to sign in
-                var result = await _signInManager.PasswordSignInAsync(
-                    user_,
-                    login.Password,
-                    login.Rember,
-                    lockoutOnFailure: false
-                );
+                _logger.LogInformation("Attempting password sign in for user: {Email}", login.Email);
+                var result = await _signInManager.PasswordSignInAsync(user_, login.Password, login.Remember, false);
 
                 if (!result.Succeeded)
                 {
-                    return Unauthorized("Invalid username/email or password");
+                    _logger.LogWarning("Login failed for user: {Email}, Result: {Result}", login.Email, result.ToString());
+                    if (result.IsLockedOut)
+                    {
+                        return BadRequest(new { message = "Account is locked. Please try again later." });
+                    }
+                    if (result.IsNotAllowed)
+                    {
+                        return BadRequest(new { message = "Account is not allowed to sign in." });
+                    }
+                    return Unauthorized(new { message = "Invalid password. Please check your credentials and try again." });
                 }
 
-                // Update last login time
-                user_.LastLogin = DateTime.Now;
-                var updateResult = await _userManager.UpdateAsync(user_);
+                _logger.LogInformation("Creating claims for user: {Email}", login.Email);
+                var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user_.UserName),
+            new Claim(ClaimTypes.Email, user_.Email),
+            new Claim("Name", user_.Name),
+            new Claim("Address", user_.Address),
+            new Claim("PhoneNumber", user_.PhoneNumber)
+        };
 
-                return Ok(new { message = "Login successfully" });
+                _logger.LogInformation("Getting roles for user: {Email}", login.Email);
+                var roles = await _userManager.GetRolesAsync(user_);
+                claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+                _logger.LogInformation("Creating JWT token for user: {Email}", login.Email);
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: _configuration["Jwt:Issuer"],
+                    audience: _configuration["Jwt:Audience"],
+                    claims: claims,
+                    expires: DateTime.Now.AddDays(1),
+                    signingCredentials: creds
+                );
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                _logger.LogInformation("Login successful for user: {Email}", login.Email);
+
+                return Ok(new
+                {
+                    message = "Login Successful.",
+                    user = new
+                    {
+                        email = user_.Email,
+                        name = user_.Name,
+                        address = user_.Address,
+                        phoneNumber = user_.PhoneNumber,
+                        userName = user_.UserName
+                    },
+                    token = tokenString
+                });
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                _logger.LogError(ex, "Error during login for email: {Email}. Stack trace: {StackTrace}",
+                    login?.Email ?? "unknown", ex.StackTrace);
+                return StatusCode(500, new
+                {
+                    message = "An error occurred during login. Please try again.",
+                    error = ex.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
 
@@ -97,7 +155,7 @@ namespace BackEnd.Controllers
 
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register( User user)
+        public async Task<IActionResult> Register(User user)
         {
             string message = "";
             IdentityResult result = new IdentityResult();
@@ -114,12 +172,12 @@ namespace BackEnd.Controllers
                     Modifydate = DateTime.Now,
                     IsAdmin = false,
                     PhoneNumber = user.PhoneNumber,
-                    LastLogin = DateTime.Now,
-                    PasswordHash = user.PasswordHash
-
+                    LastLogin = DateTime.Now
+                    // Remove this line: PasswordHash = user.PasswordHash
                 };
 
-                result = await _userManager.CreateAsync(user_);
+                // Use the password directly, let Identity handle hashing
+                result = await _userManager.CreateAsync(user_, user.PasswordHash);
                 if (result.Succeeded)
                 {
                     message = "User created successfully";
@@ -133,14 +191,13 @@ namespace BackEnd.Controllers
                     }
                     return BadRequest(message);
                 }
-
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-            
-            return Ok(new {message = message , result = result});
+
+            return Ok(new { message = message, result = result });
         }
 
 
@@ -152,23 +209,43 @@ namespace BackEnd.Controllers
             return Ok(new { trustedPartners = partner });
         }
 
-        [HttpGet("home/{email}"), Authorize]
-        public async Task<ActionResult> AdminPage(string email)
-        {
-         User user = await _userManager.FindByEmailAsync(email);
 
-            if (user == null)
+        [HttpGet("home/{email}"), Authorize]
+        public async Task<ActionResult> HomePage(string Email)
+        {
+            try
             {
-                return NotFound("User not found");
+                User userInfo = await _userManager.FindByEmailAsync(Email);
+                if (userInfo == null)
+                {
+                    return BadRequest(new { message = "User not found." });
+                }
+
+                return Ok(new
+                {
+                    userInfo = new
+                    {
+                        name = userInfo.Name,
+                        email = userInfo.Email,
+                        userName = userInfo.UserName,
+                        address = userInfo.Address,
+                        phoneNumber = userInfo.PhoneNumber
+                    }
+                });
             }
-            return Ok(new { user = user });
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HomePage endpoint");
+                return StatusCode(500, new { message = "An error occurred while fetching user information." });
+            }
         }
 
-        [HttpGet("jfljfjldkj")]
-        public async Task<ActionResult> CheckUser(string email)
+
+        [HttpGet("xhtlekd")]
+        public async Task<ActionResult> CheckUser()
         {
-          string message = "";
             User currentuser = new();
+
             try
             {
                 var user_ = HttpContext.User;
@@ -180,13 +257,75 @@ namespace BackEnd.Controllers
                 }
                 else
                 {
-                    return Unauthorized("User not found");
+                    return Forbid();
                 }
-            }catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
             }
-            return Ok(new {message = message, user_ = currentuser });
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Something went wrong please try again. " + ex.Message });
+            }
+
+            return Ok(new { message = "Logged in", user = currentuser });
         }
+
+        //[HttpGet("xhtlekd")]
+        //public async Task<IActionResult> GetUser()
+        //{
+        //    try
+        //    {
+        //        // Example: get the current user from the User claims or database
+        //        var userEmail = User.Identity?.Name; // or get from claims
+        //        if (string.IsNullOrEmpty(userEmail))
+        //            return Unauthorized();
+
+        //        var user = await _userManager.FindByEmailAsync(userEmail);
+        //        if (user == null)
+        //            return NotFound();
+
+        //        // Return user data (map to DTO if needed)
+        //        return Ok(new { user.Email, user.UserName /* etc */ });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Log exception
+        //        _logger.LogError(ex, "Error in GetUser");
+        //        return StatusCode(500, "Internal server error");
+        //    }
+        //}
+
+
+
+
+        //[HttpPost("create-test-user")]
+        //public async Task<ActionResult> CreateTestUser()
+        //{
+        //    try
+        //    {
+        //        var user = new User
+        //        {
+        //            UserName = "test@example.com",
+        //            Email = "test@example.com",
+        //            EmailConfirmed = true,
+        //            Name = "Test User",
+        //            CreateDate = DateTime.Now,
+        //            Modifydate = DateTime.Now,
+        //            IsAdmin = false,
+        //            LastLogin = DateTime.Now
+        //        };
+
+        //        var result = await _userManager.CreateAsync(user, "TestPassword123!");
+
+        //        if (result.Succeeded)
+        //        {
+        //            return Ok(new { message = "Test user created successfully. Email: test@example.com, Password: TestPassword123!" });
+        //        }
+
+        //        return BadRequest(new { message = "Failed to create test user. " + string.Join(", ", result.Errors.Select(e => e.Description)) });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { message = "Something went wrong, please try again. " + ex.Message });
+        //    }
+        //}
     }
 }

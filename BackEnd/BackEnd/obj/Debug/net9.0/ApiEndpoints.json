@@ -211,14 +211,14 @@
   },
   {
     "ContainingType": "BackEnd.Controllers.UserController",
-    "Method": "AdminPage",
+    "Method": "HomePage",
     "RelativePath": "api/User/home/{email}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "email",
+        "Name": "Email",
         "Type": "System.String",
         "IsRequired": true
       }
@@ -227,23 +227,7 @@
   },
   {
     "ContainingType": "BackEnd.Controllers.UserController",
-    "Method": "CheckUser",
-    "RelativePath": "api/User/jfljfjldkj",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "email",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "BackEnd.Controllers.UserController",
-    "Method": "Login",
+    "Method": "LoginUser",
     "RelativePath": "api/User/login",
     "HttpMethod": "POST",
     "IsController": true,
@@ -281,6 +265,16 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BackEnd.Controllers.UserController",
+    "Method": "CheckUser",
+    "RelativePath": "api/User/xhtlekd",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {

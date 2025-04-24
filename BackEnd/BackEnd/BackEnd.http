@@ -33,3 +33,8 @@ Content-Type: application/json
 GET {{BackEnd_HostAddress}}/weatherforecast
 
 ###
+
+@Email=string
+GET {{BackEnd_HostAddress}}/api/user/home/{email}?Email={{Email}}
+
+###

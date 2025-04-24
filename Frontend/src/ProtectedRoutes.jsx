@@ -6,7 +6,7 @@ function ProtectedRoutes() {
   const [waiting, setWaiting] = useState(true);
 
   useEffect(() => {
-    fetch("/api/User/login/jfljfjldkj/", {
+    fetch("/api/User/login/xhtlekd/", {
       method: "GET",
       credentials: "include",
     })
