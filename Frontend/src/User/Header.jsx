@@ -6,8 +6,8 @@ function Header() {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  // const searchRef = useRef(null);
-  // const profileRef = useRef(null);
+  const searchRef = useRef(null);
+  const profileRef = useRef(null);
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -37,16 +37,29 @@ function Header() {
       }
 
       // Close profile dropdown if clicking outside
-      if (isProfileOpen.contains(event.target)) {
+      if (
+        isProfileOpen &&
+        profileRef.current &&
+        !profileRef.current.contains(event.target)
+      ) {
         setIsProfileOpen(false);
       }
     };
 
-    // document.addEventListener("mousedown", handleClickOutside);
-    // return () => {
-    //   document.removeEventListener("mousedown", handleClickOutside);
-    // };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isSearchOpen, isProfileOpen]);
+
+  const handleLogout = () => {
+    // Clear all authentication data
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    // Redirect to login page
+    navigate("/login");
+  };
 
   return (
     <header>
@@ -75,26 +88,26 @@ function Header() {
             </ul>
           </div>
           <div className="prof">
-            <div className="search">
+            <div className="search" ref={searchRef}>
               <i
                 className="fa-solid fa-magnifying-glass"
                 onClick={toggleSearch}
               />
               <div className={`dropcontain ${isSearchOpen ? "show" : ""}`}>
-                <form action method="post">
+                <form>
                   <input type="text" placeholder="Search" />
                   <button>Search</button>
                 </form>
               </div>
             </div>
-            <div className="profile">
+            <div className="profile" ref={profileRef}>
               <i className="fa-solid fa-user" onClick={toggleProfile} />
               <div className={`profile_drop ${isProfileOpen ? "show" : ""}`}>
                 <button onClick={() => navigate("/profile")}>Profile</button>
                 <button onClick={() => navigate("/update-profile")}>
                   Update Profile
                 </button>
-                <button onClick={() => navigate("/login")}>Logout</button>
+                <button onClick={handleLogout}>Logout</button>
               </div>
             </div>
           </div>

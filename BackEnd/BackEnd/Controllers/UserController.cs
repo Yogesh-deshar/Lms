@@ -1,8 +1,10 @@
-﻿using BackEnd.Model;
+﻿using BackEnd.Data;
+using BackEnd.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,12 +25,14 @@ namespace BackEnd.Controllers
         private readonly SignInManager<User> _signInManager;
         private readonly ILogger<User> _logger;
         private readonly IConfiguration _configuration;
-        public UserController(UserManager<User> userManager, SignInManager<User> signInManager , IConfiguration configuration, ILogger<User> logger)
+        private readonly LmsUsercontext _context;
+        public UserController(UserManager<User> userManager, SignInManager<User> signInManager , IConfiguration configuration, ILogger<User> logger , LmsUsercontext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
             _logger = logger;
+            _context = context;
         }
 
 
@@ -84,7 +88,8 @@ namespace BackEnd.Controllers
             new Claim(ClaimTypes.Email, user_.Email),
             new Claim("Name", user_.Name),
             new Claim("Address", user_.Address),
-            new Claim("PhoneNumber", user_.PhoneNumber)
+            new Claim("PhoneNumber", user_.PhoneNumber),
+             //new Claim("IsAdmin", user_.IsAdmin.ToString()) // Add IsAdmin claim
         };
 
                 _logger.LogInformation("Getting roles for user: {Email}", login.Email);
@@ -112,11 +117,13 @@ namespace BackEnd.Controllers
                     message = "Login Successful.",
                     user = new
                     {
+                        id = user_.Id,
                         email = user_.Email,
                         name = user_.Name,
                         address = user_.Address,
                         phoneNumber = user_.PhoneNumber,
-                        userName = user_.UserName
+                        userName = user_.UserName,
+                         isAdmin = user_.IsAdmin // Add isAdmin to response
                     },
                     token = tokenString
                 });
@@ -180,6 +187,7 @@ namespace BackEnd.Controllers
                 result = await _userManager.CreateAsync(user_, user.PasswordHash);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user_, "User");
                     message = "User created successfully";
                     return Ok(message);
                 }
@@ -266,6 +274,40 @@ namespace BackEnd.Controllers
             }
 
             return Ok(new { message = "Logged in", user = currentuser });
+        }
+
+
+
+        [HttpGet("getuser/{id}")]
+        public async Task<ActionResult<User>> GetUsers(string id)
+        {
+            try
+            {
+                // Use UserManager instead of DbContext
+                var user = await _userManager.FindByIdAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found" });
+                }
+
+                // Return only the necessary user information
+                return Ok(new
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    UserName = user.UserName,
+                    Address = user.Address,
+                    PhoneNumber = user.PhoneNumber,
+                    IsAdmin = user.IsAdmin
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching user with ID: {Id}", id);
+                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
+            }
         }
 
         //[HttpGet("xhtlekd")]

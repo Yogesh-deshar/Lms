@@ -1,43 +1,69 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Admin.css";
 import Admin_header from "./Admin_header";
 import Admin_sidebar from "./Admin_sidebar";
+import { useNavigate } from "react-router-dom";
+
 function Admin_index() {
   const [partners, setPartners] = useState([]);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const userinfo = localStorage.getItem("user");
-    if (!userinfo) {
+    // Get user info from localStorage
+    const userInfo = localStorage.getItem("user");
+    if (!userInfo) {
       setError("No user information found");
+      navigate("/admin");
       return;
     }
 
-    fetch("api/Backend/admin/", {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return res.json();
+    try {
+      const userData = JSON.parse(userInfo);
+      if (!userData.isAuthenticated || !userData.isAdmin) {
+        setError("Access denied. Admin privileges required.");
+        navigate("/admin");
+        return;
+      }
+      setUser(userData);
+
+      // Fetch admin data
+      fetch("/api/User/admin", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       })
-      .then((data) => {
-        setPartners(data.trustedPartners);
-      })
-      .catch((error) => {
-        console.error("Error fetching user data:", error);
-        setError(error.message);
-      });
-  }, []);
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          setPartners(data.trustedPartners);
+        })
+        .catch((error) => {
+          console.error("Error fetching admin data:", error);
+          setError(error.message);
+        });
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+      setError("Error processing user information");
+      navigate("/admin");
+    }
+  }, [navigate]);
 
   if (error) {
     return <div>Error: {error}</div>;
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <div>Loading...</div>;
   }
 
   return (

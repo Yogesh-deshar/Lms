@@ -3,11 +3,13 @@ import Admin_sidebar from "./Admin_sidebar";
 import Admin_header from "./Admin_header";
 import "./Admin.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Admin_manage_book() {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchBooks();
@@ -24,9 +26,9 @@ function Admin_manage_book() {
       console.log("API Response:", response.data);
       // Log each book's image details
       response.data.forEach((book) => {
-        console.log(`Book: ${book.bookName}`);
-        console.log(`Image property: ${book.imageSrc}`);
-        console.log(`Full image URL: ${book.imageSrc}`);
+        console.log(`Book: ${book.BookName}`);
+        console.log(`Image property: ${book.Image}`);
+        console.log(`Full image URL: ${book.ImageSrc}`);
       });
       setBooks(response.data);
       setLoading(false);
@@ -67,12 +69,14 @@ function Admin_manage_book() {
     }
   };
 
+
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <>
-      <Admin_header />
+      <Admin_header  />
       <section className="admin_contains">
         <div className="side_bar">
           <Admin_sidebar />
@@ -95,11 +99,11 @@ function Admin_manage_book() {
                 </thead>
                 <tbody>
                   {books.map((book) => (
-                    <tr key={book.id}>
+                    <tr key={book.Id}>
                       <td>
                         <img
-                          src={book.imageSrc || "default-book-image.jpg"}
-                          alt={book.bookName || "Book cover"}
+                          src={book.ImageSrc || "/default-book-image.svg"}
+                          alt={book.BookName || "Book cover"}
                           style={{
                             width: "50px",
                             height: "50px",
@@ -108,19 +112,20 @@ function Admin_manage_book() {
                           onError={(e) => {
                             console.error(
                               `Failed to load image for book ${
-                                book.bookName || "Unknown"
-                              }:`,
-                              e
+                                book.BookName || "Unknown"
+                              }`
                             );
-                            e.target.src = "default-book-image.jpg";
+                            e.target.onerror = null; // Prevent infinite loop
+                            e.target.src = "/default-book-image.svg";
+                            e.target.alt = "Default book cover";
                           }}
                         />
                       </td>
-                      <td>{book.bookName}</td>
-                      <td>{book.author}</td>
-                      <td>{book.class}</td>
-                      <td>{book.quantity}</td>
-                      <td>{book.description}</td>
+                      <td>{book.BookName}</td>
+                      <td>{book.Author}</td>
+                      <td>{book.Class}</td>
+                      <td>{book.Quantity}</td>
+                      <td>{book.Description}</td>
                       <td>
                         <button
                           className="edit-btn"
@@ -133,7 +138,7 @@ function Admin_manage_book() {
                         </button>
                         <button
                           className="delete-btn"
-                          onClick={() => handleDelete(book.id)}
+                          onClick={() => handleDelete(book.Id)}
                         >
                           Delete
                         </button>

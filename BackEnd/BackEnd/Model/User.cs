@@ -21,5 +21,6 @@ namespace BackEnd.Model
 
         public bool? IsAdmin { get; set; }
         public DateTime LastLogin { get; internal set; }
+      
     }
 }

@@ -42,13 +42,10 @@ namespace BackEnd.Model
     {
         public Guid Id { get; set; }    
         public Guid  Book_Id { get; set; }
-        public string? BookName { get; set; }
-        public string? Author { get; set; }
-        public string? Description { get; set; }
-        public string? Category { get; set; }
-        public string? Image { get; set; }
+    
         public Guid User_id { get; set; }
-        public string? User { get; set; }
+        public Books? Book { get; set; } 
+        public User? User { get; set; }
 
         public DateTime Booked_date { get; set; }
         public DateTime Return_date { get; set; }

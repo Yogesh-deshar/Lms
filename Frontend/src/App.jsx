@@ -16,6 +16,7 @@ import Button from "react-bootstrap/Button";
 import Index from "./User/Index";
 import About from "./User/About";
 import Contact from "./User/Contact";
+
 import Booked from "./User/Booked";
 import Class from "./User/Class";
 import UserProfile from "./User/UserProfile";
@@ -31,7 +32,7 @@ import Regester from "./User/Regester";
 // Create a context for authentication
 export const AuthContext = React.createContext();
 
-// Protected Route component
+// Protected Route component for regular users
 function ProtectedRoute({ children }) {
   const user = localStorage.getItem("user");
   console.log("ProtectedRoute - Current user state:", user);
@@ -55,7 +56,31 @@ function ProtectedRoute({ children }) {
   }
 }
 
+// Protected Route component for admin users
+function ProtectedAdminRoute({ children }) {
+  const user = localStorage.getItem("user");
+  console.log("ProtectedAdminRoute - Current user state:", user);
 
+  if (!user) {
+    console.log("No user found in localStorage, redirecting to admin login");
+    return <Navigate to="/admin" replace />;
+  }
+
+  try {
+    const userData = JSON.parse(user);
+    if (!userData.isAuthenticated || !userData.isAdmin) {
+      console.log(
+        "User is not authenticated as admin, redirecting to admin login"
+      );
+      return <Navigate to="/admin" replace />;
+    }
+    return children;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    localStorage.removeItem("user");
+    return <Navigate to="/admin" replace />;
+  }
+}
 
 function App() {
   const isLogged = localStorage.getItem("user");
@@ -68,9 +93,7 @@ function App() {
     const data = await response.json();
     if (response.ok) {
       localStorage.removeItem("user");
-
       alert(data.message);
-
       document.location = "/login";
     } else {
       console.log("could not logout: ", response);
@@ -127,13 +150,38 @@ function App() {
 
         {/* Admin Routes */}
         <Route path="/admin" element={<Admin_login />} />
-        <Route path="/admin/dashboard" element={<Admin_index />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedAdminRoute>
+              <Admin_index />
+            </ProtectedAdminRoute>
+          }
+        />
         <Route
           path="/admin/booked-books"
-          element={<Admin_Alrady_booked_book />}
+          element={
+            <ProtectedAdminRoute>
+              <Admin_Alrady_booked_book />
+            </ProtectedAdminRoute>
+          }
         />
-        <Route path="/admin/add-book" element={<Admin_add_book />} />
-        <Route path="/admin/manage-books" element={<Admin_manage_book />} />
+        <Route
+          path="/admin/add-book"
+          element={
+            <ProtectedAdminRoute>
+              <Admin_add_book />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-books"
+          element={
+            <ProtectedAdminRoute>
+              <Admin_manage_book />
+            </ProtectedAdminRoute>
+          }
+        />
 
         {/* Redirect any unknown routes to home */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -57,6 +57,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Lockout.MaxFailedAccessAttempts = 0;
     options.Lockout.AllowedForNewUsers = true;
     options.User.RequireUniqueEmail = true;
+   
 })
 .AddEntityFrameworkStores<LmsUsercontext>()
 .AddDefaultTokenProviders();
@@ -64,6 +65,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 // Add JWT authentication
 builder.Services.AddAuthentication(options =>
 {
+  
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })

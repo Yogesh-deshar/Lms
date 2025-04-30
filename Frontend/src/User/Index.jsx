@@ -49,6 +49,11 @@ function Index() {
     }
   }, []);
 
+
+  function logout(){
+    
+  }
+
   // if (!user) {
   //   return <div>Loading...</div>;
   // }
