@@ -27,8 +27,11 @@ import Admin_index from "./Admin/Admin_index";
 import Admin_Alrady_booked_book from "./Admin/Admin_Alrady_booked_book";
 import Admin_add_book from "./Admin/Admin_add_book";
 import Admin_manage_book from "./Admin/Admin_manage_book";
+import Admin_updatebooks from "./Admin/Admin_updatebooks";
 import Regester from "./User/Regester";
-
+import Admin_booked_book from "./Admin/Admin_booked_book";
+import Search from "./User/Search";
+import "./App.css";
 // Create a context for authentication
 export const AuthContext = React.createContext();
 
@@ -147,6 +150,7 @@ function App() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/regester" element={<Regester />} />
+        <Route path="/search" element={<Search />} />
 
         {/* Admin Routes */}
         <Route path="/admin" element={<Admin_login />} />
@@ -179,6 +183,22 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <Admin_manage_book />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/update-books"
+          element={
+            <ProtectedAdminRoute>
+              <Admin_updatebooks />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/admin-booked-books"
+          element={
+            <ProtectedAdminRoute>
+              <Admin_booked_book />
             </ProtectedAdminRoute>
           }
         />

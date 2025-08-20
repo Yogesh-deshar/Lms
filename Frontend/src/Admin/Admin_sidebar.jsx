@@ -18,6 +18,9 @@ function Admin_sidebar() {
           <li>
             <Link to="/admin/add-book">Add Book</Link>
           </li>
+          <li>
+            <Link to="/admin/admin-booked-books">Booked Books</Link>
+          </li>
         </ul>
       </nav>
     </div>

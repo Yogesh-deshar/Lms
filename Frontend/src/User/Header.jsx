@@ -8,6 +8,7 @@ function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const searchRef = useRef(null);
   const profileRef = useRef(null);
+  const [searchInput, setSearchInput] = useState("");
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
@@ -52,6 +53,15 @@ function Header() {
     };
   }, [isSearchOpen, isProfileOpen]);
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchInput.trim())}`);
+      setIsSearchOpen(false);
+      setSearchInput("");
+    }
+  };
+
   const handleLogout = () => {
     // Clear all authentication data
     localStorage.removeItem("user");
@@ -94,9 +104,14 @@ function Header() {
                 onClick={toggleSearch}
               />
               <div className={`dropcontain ${isSearchOpen ? "show" : ""}`}>
-                <form>
-                  <input type="text" placeholder="Search" />
-                  <button>Search</button>
+                <form onSubmit={handleSearchSubmit}>
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  <button type="submit">Search</button>
                 </form>
               </div>
             </div>

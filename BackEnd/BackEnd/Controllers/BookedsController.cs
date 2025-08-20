@@ -1,12 +1,13 @@
-﻿using System;
+﻿using BackEnd.Data;
+using BackEnd.Model;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using BackEnd.Data;
-using BackEnd.Model;
 
 namespace BackEnd.Controllers
 {
@@ -15,17 +16,60 @@ namespace BackEnd.Controllers
     public class BookedsController : ControllerBase
     {
         private readonly Databasecontext _context;
+        private readonly UserManager<User> _userManager;
 
-        public BookedsController(Databasecontext context)
+        public BookedsController(Databasecontext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Bookeds
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Booked>>> GetBookeds()
+        public async Task<ActionResult<IEnumerable<object>>> GetBookeds()
         {
-            return await _context.Bookeds.Include(b => b.Book).Include(u => u.User).ToListAsync();
+            try
+            {
+                var bookedItems = await _context.Bookeds
+                    .Include(b => b.Book)
+                    .ToListAsync();
+
+                var result = new List<object>();
+
+                foreach (var item in bookedItems)
+                {
+                    // Get user details using UserManager
+                    var user = await _userManager.FindByIdAsync(item.User_id.ToString());
+
+                    var bookedItemWithUser = new
+                    {
+                        Id = item.Id,
+                        Book_Id = item.Book_Id,
+                        User_id = item.User_id,
+                        Booked_date = item.Booked_date,
+                        Return_date = item.Return_date,
+                        Book = item.Book,
+                        User = user != null ? new
+                        {
+                            Id = user.Id,
+                            Name = user.Name,
+                            Email = user.Email,
+                            UserName = user.UserName,
+                            Address = user.Address,
+                            PhoneNumber = user.PhoneNumber
+                        } : null
+                    };
+
+                    result.Add(bookedItemWithUser);
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching booked items", error = ex.Message });
+            }
         }
 
         // GET: api/Bookeds/5

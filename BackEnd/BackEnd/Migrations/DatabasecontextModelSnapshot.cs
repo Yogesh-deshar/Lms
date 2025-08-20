@@ -84,6 +84,32 @@ namespace BackEnd.Migrations
                     b.ToTable("Books");
                 });
 
+            modelBuilder.Entity("BackEnd.Model.Offlinebooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BookName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Booked_date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Bookedby")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Class")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Return_date")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Offlinebookings");
+                });
+
             modelBuilder.Entity("BackEnd.Model.User", b =>
                 {
                     b.Property<string>("Id")

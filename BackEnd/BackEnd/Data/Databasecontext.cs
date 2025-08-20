@@ -12,6 +12,7 @@ namespace BackEnd.Data
      
         public DbSet<Books> Books { get; set; }
         public DbSet<Booked> Bookeds { get; set; }
+        public DbSet<Offlinebooking> Offlinebookings { get; set; }
     }
     
 }

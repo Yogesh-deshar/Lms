@@ -69,14 +69,12 @@ function Admin_manage_book() {
     }
   };
 
-
-
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <>
-      <Admin_header  />
+      <Admin_header />
       <section className="admin_contains">
         <div className="side_bar">
           <Admin_sidebar />
@@ -130,8 +128,9 @@ function Admin_manage_book() {
                         <button
                           className="edit-btn"
                           onClick={() => {
-                            // Add edit functionality
-                            alert("Edit functionality coming soon!");
+                            navigate("/admin/update-books", {
+                              state: { book },
+                            });
                           }}
                         >
                           Edit

@@ -8,10 +8,42 @@ function Admin_Alrady_booked_book() {
   const [bookedItems, setBookedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sortField, setSortField] = useState("Booked_date");
+  const [sortDirection, setSortDirection] = useState("asc");
 
   useEffect(() => {
     fetchBooked();
   }, []);
+
+  // Insertion Sort implementation
+  const insertionSort = (arr, field, direction) => {
+    const sortedArr = [...arr];
+    for (let i = 1; i < sortedArr.length; i++) {
+      const current = sortedArr[i];
+      let j = i - 1;
+
+      while (
+        j >= 0 &&
+        (direction === "asc"
+          ? sortedArr[j][field] > current[field]
+          : sortedArr[j][field] < current[field])
+      ) {
+        sortedArr[j + 1] = sortedArr[j];
+        j--;
+      }
+      sortedArr[j + 1] = current;
+    }
+    return sortedArr;
+  };
+
+  const handleSort = (field) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   const fetchBooked = async () => {
     try {
@@ -57,6 +89,7 @@ function Admin_Alrady_booked_book() {
               };
             } else {
               console.log("No user data found in booked item");
+              console.log("Available properties:", Object.keys(item));
             }
 
             console.log(
@@ -122,6 +155,8 @@ function Admin_Alrady_booked_book() {
     }
   };
 
+  const sortedItems = insertionSort(bookedItems, sortField, sortDirection);
+
   return (
     <>
       <Admin_header />
@@ -130,70 +165,90 @@ function Admin_Alrady_booked_book() {
           <Admin_sidebar />
         </div>
         <div className="Right_contains">
-          <h2>Booked Books</h2>
-          <div className="right_contains_items">
+          <h2> admin Booked Books</h2>
+          <div className="table-responsive">
             {loading && <div>Loading...</div>}
             {error && <div>Error: {error}</div>}
-            {bookedItems.map((bookedItem) => (
-              <div className="bookitems" key={bookedItem.Id}>
-                <div className="Already_booked_book_contain">
-                  {bookedItem.Book ? (
-                    <>
+            <table className="table table-striped table-bordered">
+              <thead>
+                <tr>
+                  <th>Book Image</th>
+                  <th onClick={() => handleSort("Book.BookName")}>
+                    Title{" "}
+                    {sortField === "Book.BookName" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th onClick={() => handleSort("Book.Author")}>
+                    Author{" "}
+                    {sortField === "Book.Author" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th onClick={() => handleSort("User.Name")}>
+                    Booked By{" "}
+                    {sortField === "User.Name" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th onClick={() => handleSort("User.Email")}>
+                    Email{" "}
+                    {sortField === "User.Email" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th onClick={() => handleSort("Booked_date")}>
+                    Booked Date{" "}
+                    {sortField === "Booked_date" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th onClick={() => handleSort("Return_date")}>
+                    Return Date{" "}
+                    {sortField === "Return_date" &&
+                      (sortDirection === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedItems.map((bookedItem) => (
+                  <tr key={bookedItem.Id}>
+                    <td>
                       <img
                         src={
-                          bookedItem.Book.Image
+                          bookedItem.Book?.Image
                             ? `/api/Books/images/${bookedItem.Book.Image}`
                             : "/default-book-image.jpg"
                         }
-                        alt={bookedItem.Book.BookName}
+                        alt={bookedItem.Book?.BookName || "Book"}
+                        style={{
+                          width: "50px",
+                          height: "70px",
+                          objectFit: "cover",
+                        }}
                         onError={(e) => {
                           e.target.src = "/default-book-image.jpg";
                         }}
                       />
-                      <p>Title: {bookedItem.Book.BookName}</p>
-                      <p>Author: {bookedItem.Book.Author}</p>
-                      <p>Booked by: {bookedItem.User.Name}</p>
-                      <p>Email: {bookedItem.User.Email}</p>
-                      <p>
-                        Booked Date:{" "}
-                        {new Date(bookedItem.Booked_date).toLocaleDateString()}
-                      </p>
-                      <p>
-                        Return Date:{" "}
-                        {new Date(bookedItem.Return_date).toLocaleDateString()}
-                      </p>
+                    </td>
+                    <td>{bookedItem.Book?.BookName || "N/A"}</td>
+                    <td>{bookedItem.Book?.Author || "N/A"}</td>
+                    <td>{bookedItem.User.Name}</td>
+                    <td>{bookedItem.User.Email}</td>
+                    <td>
+                      {new Date(bookedItem.Booked_date).toLocaleDateString()}
+                    </td>
+                    <td>
+                      {new Date(bookedItem.Return_date).toLocaleDateString()}
+                    </td>
+                    <td>
                       <button
-                        className="btn btn-danger"
+                        className="btn btn-danger btn-sm"
                         onClick={() => handleReturn(bookedItem.Id)}
                       >
                         Return Book
                       </button>
-                    </>
-                  ) : (
-                    <div>
-                      <p>Book details not available</p>
-                      <p>Book ID: {bookedItem.Book_Id}</p>
-                      <p>Booked by: {bookedItem.User.Name}</p>
-                      <p>Email: {bookedItem.User.Email}</p>
-                      <p>
-                        Booked Date:{" "}
-                        {new Date(bookedItem.Booked_date).toLocaleDateString()}
-                      </p>
-                      <p>
-                        Return Date:{" "}
-                        {new Date(bookedItem.Return_date).toLocaleDateString()}
-                      </p>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleReturn(bookedItem.Id)}
-                      >
-                        Return Book
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>

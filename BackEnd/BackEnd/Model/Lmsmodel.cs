@@ -50,4 +50,17 @@ namespace BackEnd.Model
         public DateTime Booked_date { get; set; }
         public DateTime Return_date { get; set; }
     }
+
+    public class Offlinebooking
+    {
+        public Guid Id { get; set; }
+        public string? BookName { get; set; }
+      
+        public string? Class { get; set; }
+       public string? Bookedby { get; set; }
+        public DateTime Booked_date { get; set; }
+        public DateTime Return_date { get; set; }
+
+
+    }
 }

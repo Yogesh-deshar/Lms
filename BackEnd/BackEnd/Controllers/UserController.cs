@@ -278,37 +278,6 @@ namespace BackEnd.Controllers
 
 
 
-        [HttpGet("getuser/{id}")]
-        public async Task<ActionResult<User>> GetUsers(string id)
-        {
-            try
-            {
-                // Use UserManager instead of DbContext
-                var user = await _userManager.FindByIdAsync(id);
-
-                if (user == null)
-                {
-                    return NotFound(new { message = "User not found" });
-                }
-
-                // Return only the necessary user information
-                return Ok(new
-                {
-                    Id = user.Id,
-                    Name = user.Name,
-                    Email = user.Email,
-                    UserName = user.UserName,
-                    Address = user.Address,
-                    PhoneNumber = user.PhoneNumber,
-                    IsAdmin = user.IsAdmin
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching user with ID: {Id}", id);
-                return StatusCode(500, new { message = "Internal server error", error = ex.Message });
-            }
-        }
 
         //[HttpGet("xhtlekd")]
         //public async Task<IActionResult> GetUser()

@@ -71,33 +71,67 @@ namespace BackEnd.Controllers
         // PUT: api/Books/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutBooks(Guid id, Books books)
+        public async Task<IActionResult> PutBooks(Guid id, [FromForm] Books books)
         {
             if (id != books.Id)
             {
-                return BadRequest();
+                return BadRequest("ID mismatch");
             }
-
-            _context.Entry(books).State = EntityState.Modified;
 
             try
             {
+                var existingBook = await _context.Books.FindAsync(id);
+                if (existingBook == null)
+                {
+                    return NotFound("Book not found");
+                }
+
+                // Update basic properties
+                existingBook.BookName = books.BookName;
+                existingBook.Author = books.Author;
+                existingBook.Description = books.Description;
+                existingBook.Class = books.Class;
+                existingBook.Quantity = books.Quantity;
+
+                // Handle image update if new image is provided
+                if (books.ImageFile != null)
+                {
+                    // Delete old image if it exists
+                    if (!string.IsNullOrEmpty(existingBook.Image))
+                    {
+                        var oldImagePath = Path.Combine(_hostEnvironment.ContentRootPath, "Images", existingBook.Image);
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    // Save new image
+                    existingBook.Image = await saveImage(books.ImageFile);
+                }
+
+                _context.Entry(existingBook).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Book updated successfully", book = existingBook });
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!BooksExists(id))
                 {
-                    return NotFound();
+                    return NotFound("Book not found");
                 }
                 else
                 {
                     throw;
                 }
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
+
 
         // POST: api/Books
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -191,6 +225,48 @@ namespace BackEnd.Controllers
         }
 
 
+        // GET: api/Books/search?query=math
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<Books>>> SearchBooks([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return await _context.Books.Select(x => new Books()
+                {
+                    Id = x.Id,
+                    BookName = x.BookName,
+                    Author = x.Author,
+                    Description = x.Description,
+                    Class = x.Class,
+                    Quantity = x.Quantity,
+                    Image = x.Image,
+                    ImageSrc = $"{Request.Scheme}://{Request.Host}/api/Books/images/{x.Image}"
+                }).ToListAsync();
+            }
+
+            var lowerQuery = query.ToLower();
+            var result = await _context.Books
+                .Where(x =>
+                    x.BookName.ToLower().Contains(lowerQuery) ||
+                    x.Author.ToLower().Contains(lowerQuery) ||
+                    x.Description.ToLower().Contains(lowerQuery) ||
+                    x.Class.ToLower().Contains(lowerQuery)
+                )
+                .Select(x => new Books()
+                {
+                    Id = x.Id,
+                    BookName = x.BookName,
+                    Author = x.Author,
+                    Description = x.Description,
+                    Class = x.Class,
+                    Quantity = x.Quantity,
+                    Image = x.Image,
+                    ImageSrc = $"{Request.Scheme}://{Request.Host}/api/Books/images/{x.Image}"
+                })
+                .ToListAsync();
+
+            return result;
+        }
 
 
 
